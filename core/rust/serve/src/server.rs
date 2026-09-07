@@ -285,7 +285,7 @@ fn handle_connection(mut stream: TcpStream, model_label: &str) -> std::io::Resul
 }
 
 fn handle_chat_request(req: &ChatRequest) -> ChatResponse {
-    let mut server = NeuraServer::new(ServerConfig::default());
+    let server = NeuraServer::new(ServerConfig::default());
     server.handle_chat_completion(req)
 }
 

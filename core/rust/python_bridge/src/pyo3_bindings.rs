@@ -11,7 +11,8 @@ use pyo3::prelude::*;
 use std::sync::Mutex;
 
 use neura_x_pager::{MemoryPager, PagerConfig};
-use neura_x_nex_format::{NexHeader, NexSerializer, NexModelData, NexDeserializer};
+use neura_x_nex_format::{NexHeader, NexSerializer, NexDeserializer};
+use neura_x_nex_format::serializer::{NexModelData, FractalSeedData};
 use neura_x_nex_format::founders_lock::FoundersLock;
 use neura_x_nex_format::ModelType;
 
@@ -281,8 +282,7 @@ fn serialize_nex(
 /// Deserialize a .nex file. Returns a Python dict describing the model.
 #[pyfunction]
 fn deserialize_nex(path: &str) -> PyResult<PyObject> {
-    let data = NexDeserializer::new()
-        .deserialize_from_file(std::path::Path::new(path))
+    let data = NexDeserializer::deserialize_from_file(std::path::Path::new(path))
         .map_err(|e| {
             PyErr::new::<pyo3::exceptions::PyIOError, _>(format!(
                 "Deserialization failed: {}",
