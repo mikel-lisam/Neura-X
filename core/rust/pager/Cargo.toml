@@ -15,9 +15,9 @@ repository = "https://github.com/mikeledusei/Neura-X"
 [dependencies]
 libc = "0.2"
 log = "0.4"
-env_logger = "0.11"
+env_logger = "0.10"
 serde = { version = "1.0", features = ["derive"] }
-bincode = "3.0"
+bincode = "1.3"
 
 [lib]
 name = "neura_x_pager"
