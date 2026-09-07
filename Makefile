@@ -34,8 +34,8 @@ RUST := cargo
 PYTHON := python3
 
 # Compiler flags
-CFLAGS := -O3 -Wall -Wextra -std=c11 -fPIC
-CXXFLAGS := -O3 -Wall -Wextra -std=c++17 -fPIC
+CFLAGS := -O3 -Wall -Wextra -std=c11 -fPIC -D_GNU_SOURCE
+CXXFLAGS := -O3 -Wall -Wextra -std=c++17 -fPIC -D_GNU_SOURCE
 LDFLAGS := -shared
 
 # LLVM configuration
