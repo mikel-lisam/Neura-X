@@ -723,3 +723,5 @@ GPATH
 
 # SVG logos must survive the Vim swap-file pattern
 !*.svg
+
+!docs/pypi_deployment.md

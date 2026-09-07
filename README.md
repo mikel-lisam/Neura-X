@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Neura-X Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/mikel-lisam/Neura-X/main/assets/logo.png" alt="Neura-X" width="400"/>
 </p>
 
 <h1 align="center">Neura-X</h1>

@@ -135,10 +135,10 @@ all = [
 
 [project.urls]
 Homepage = "https://neura-x.dev"
-Repository = "https://github.com/edusei-lisamba/neura-x"
+Repository = "https://github.com/mikel-lisam/Neura-X"
 Documentation = "https://docs.neura-x.dev"
-Issues = "https://github.com/edusei-lisamba/neura-x/issues"
-Changelog = "https://github.com/edusei-lisamba/neura-x/blob/main/CHANGELOG.md"
+Issues = "https://github.com/mikel-lisam/Neura-X/issues"
+Changelog = "https://github.com/mikel-lisam/Neura-X/blob/main/CHANGELOG.md"
 Whitepaper = "https://neura-x.dev/whitepaper"
 
 # ──────────────────────────────────────────────────────────
