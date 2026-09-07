@@ -24,6 +24,8 @@ jobs:
   benchmark:
     name: Benchmark Suite
     runs-on: ${{ vars.BENCHMARK_RUNNER || 'ubuntu-latest' }}
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@v7
