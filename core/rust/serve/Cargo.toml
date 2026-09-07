@@ -1,0 +1,23 @@
+# ==========================================================
+# Neura-X: Intelligence Without Limits.
+# Copyright (c) 2026 Edusei Mikel Lisamba. All Rights Reserved.
+# ==========================================================
+
+[package]
+name = "neura-x-serve"
+version = "1.0.0"
+edition = "2021"
+authors = ["Edusei Mikel Lisamba <lisambamikel@gmail.com>"]
+description = "Neura-X OpenAI-Compatible Local Server"
+license-file = "../../../LICENSE"
+repository = "https://github.com/mikeledusei/Neura-X"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.10"
+
+[lib]
+name = "neura_x_serve"
+crate-type = ["lib"]

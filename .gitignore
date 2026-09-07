@@ -593,11 +593,15 @@ pnpm-debug.log*
 *.swp
 *.swo
 
-# Core dumps
-core
-core.*
+# Core dumps — MUST NOT match the core/ source directory.
+#   /core        → ignores a crash-dump FILE named "core" at repo root
+#   !core/       → re-includes the DIRECTORY (trailing slash = dirs only)
+#   core.[0-9]*  → catches core.12345 style dumps
+/core
+!core/
+core.[0-9]*
 *.core
-vgcore.*
+vgcore.**
 
 
 # ══════════════════════════════════════════════════════════════════════════════
