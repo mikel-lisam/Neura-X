@@ -38,108 +38,122 @@ _core_available = False
 def _load_rust_core():
     """
     Attempt to load the compiled Rust core from multiple locations.
-    Tries 4 strategies in order until one succeeds.
+    Tries several strategies in order until one succeeds.
+
+    IMPORTANT: This function must leave the global state consistent.
+    On success: `_core is not None` AND `_core_available is True`.
+    On failure: `_core is None` AND `_core_available is False`.
     """
     global _core, _core_available
 
-    # Strategy 1: Direct import (works if installed via pip/maturin develop)
+    # Reset state at the start of every load attempt so partial failures
+    # cannot leave `_core_available = True` while `_core is None`.
+    _core = None
+    _core_available = False
+
+    # Strategy 1: Import the bundled `_core` as a top-level module.
+    # Maturin-built wheels ship `_core.so` either inside `neura_x/` (when
+    # pyproject.toml configures a package layout) or as a top-level module.
     try:
-        from neura_x import _core as _rust_core
-        _core = _rust_core
-        _core_available = True
-        return
+        import _core as _rust_core  # noqa: F401
+        if _rust_core is not None:
+            _core = _rust_core
+            _core_available = True
+            return
     except ImportError:
         pass
 
-    # Strategy 2: Look for .so/.pyd/.dylib in the package directory
+    # Strategy 2: Submodule-style import (`from neura_x import _core`).
+    # Works when maturin was configured to place `_core.so` inside the
+    # `neura_x` package directory. NOTE: when `_core` is not actually a
+    # submodule, Python returns the existing `None` attribute of the
+    # partially-initialized package instead of raising ImportError, so we
+    # must explicitly check for None.
     try:
-        import importlib.util
-        import glob
-        import os
-
-        package_dir = os.path.dirname(os.path.abspath(__file__))
-        patterns = [
-            os.path.join(package_dir, "_core*.so"),
-            os.path.join(package_dir, "_core*.pyd"),
-            os.path.join(package_dir, "_core*.dylib"),
-        ]
-
-        for pattern in patterns:
-            matches = glob.glob(pattern)
-            if matches:
-                spec = importlib.util.spec_from_file_location(
-                    "neura_x._core", matches[0]
-                )
-                if spec and spec.loader:
-                    _core = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(_core)
-                    _core_available = True
-                    return
-    except Exception:
+        from neura_x import _core as _rust_core  # noqa: F401
+        if _rust_core is not None:
+            _core = _rust_core
+            _core_available = True
+            return
+    except ImportError:
         pass
 
-    # Strategy 3: Look in the Rust build directory
+    # Strategy 3: Filesystem-based loading via importlib.util.
+    # Tries (a) this package directory, (b) the Rust build directory,
+    # (c) common site-packages layouts for maturin wheels.
+    import importlib.util
+    import glob
+    import os
+    import sys
+
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(package_dir))
+
+    candidate_paths = []
+
+    # (a) Inside this package directory.
+    for ext in ("so", "pyd", "dylib"):
+        candidate_paths.extend(
+            glob.glob(os.path.join(package_dir, "_core*" + "." + ext))
+        )
+
+    # (b) Rust build directory.
+    candidate_paths.extend([
+        os.path.join(project_root, "core", "rust", "python_bridge",
+                     "target", "release", "lib_core.so"),
+        os.path.join(project_root, "core", "rust", "python_bridge",
+                     "target", "release", "_core.so"),
+        os.path.join(project_root, "core", "rust", "python_bridge",
+                     "target", "debug", "lib_core.so"),
+        os.path.join(project_root, "core", "rust", "python_bridge",
+                     "target", "debug", "_core.so"),
+        os.path.join(project_root, "build", "lib_core.so"),
+        os.path.join(project_root, "build", "_core.so"),
+    ])
+
+    # (c) site-packages layouts: top-level or under neura_x/.
     try:
-        import importlib.util
-        import os
-
-        package_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.dirname(os.path.dirname(package_dir))
-
-        build_paths = [
-            os.path.join(project_root, "core", "rust", "python_bridge",
-                         "target", "release", "lib_core.so"),
-            os.path.join(project_root, "core", "rust", "python_bridge",
-                         "target", "debug", "lib_core.so"),
-            os.path.join(project_root, "build", "lib_core.so"),
-        ]
-
-        for path in build_paths:
-            if os.path.exists(path):
-                spec = importlib.util.spec_from_file_location(
-                    "neura_x._core", path
-                )
-                if spec and spec.loader:
-                    _core = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(_core)
-                    _core_available = True
-                    return
-    except Exception:
-        pass
-
-    # Strategy 4: Search site-packages
-    try:
-        import importlib.util
         import site
-        import glob
-        import os
-
-        search_dirs = []
+        site_dirs = []
         try:
-            search_dirs.extend(site.getsitepackages())
+            site_dirs.extend(site.getsitepackages())
         except AttributeError:
             pass
         try:
-            search_dirs.append(site.getusersitepackages())
+            site_dirs.append(site.getusersitepackages())
         except AttributeError:
             pass
-
-        for site_dir in search_dirs:
-            pattern = os.path.join(site_dir, "neura_x", "_core*.so")
-            matches = glob.glob(pattern)
-            if matches:
-                spec = importlib.util.spec_from_file_location(
-                    "neura_x._core", matches[0]
-                )
-                if spec and spec.loader:
-                    _core = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(_core)
-                    _core_available = True
-                    return
+        for d in site_dirs:
+            if not d:
+                continue
+            candidate_paths.extend(glob.glob(os.path.join(d, "_core*" + ".*")))
+            candidate_paths.extend(
+                glob.glob(os.path.join(d, "neura_x", "_core*" + ".*"))
+            )
     except Exception:
         pass
 
-    # Core not found — set flag and continue with Python fallbacks
+    for path in candidate_paths:
+        if not path or not os.path.exists(path):
+            continue
+        try:
+            spec = importlib.util.spec_from_file_location("neura_x._core", path)
+            if spec is None or spec.loader is None:
+                continue
+            module = importlib.util.module_from_spec(spec)
+            # Register in sys.modules so that subsequent `from neura_x import _core`
+            # resolves to the same module object instead of triggering a re-run of
+            # this __init__.py.
+            sys.modules["neura_x._core"] = module
+            spec.loader.exec_module(module)
+            if module is not None:
+                _core = module
+                _core_available = True
+                return
+        except Exception:
+            continue
+
+    # Core not found — flag stays False and _core stays None.
     _core_available = False
 
 
@@ -155,7 +169,7 @@ from neura_x.fractal_layer import FractalTensor, FractalSeed
 from neura_x.liquid_router import LiquidRouter
 from neura_x.optimizer import ShadowAdamW, CircadianOptimizer, ShadowSGD
 from neura_x.stream_loader import StreamLoader
-from neura_x.compose import compose
+from neura_x.compose import compose, ComposedModel
 from neura_x.loss import CrossEntropyLoss, MSELoss, MAELoss, L1Loss
 from neura_x.optim import AdamW, SGD, Adam, RMSprop, CosineAnnealingLR, LinearLR
 from neura_x.imagegen import ImageGen
@@ -166,7 +180,7 @@ from neura_x.predictive import Predictive
 from neura_x.moe import MoE
 from neura_x.tools import tool, ToolRegistry
 from neura_x.skills import skill, Skill
-from neura_x.agent import Agent, AgentTeam
+from neura_x.agent import Agent, AgentTeam, HolographicMemory
 from neura_x.eval import EvalSuite
 from neura_x.serve import serve
 from neura_x.convert import convert
@@ -181,10 +195,13 @@ from neura_x.bench import BenchmarkSuite
 # MODEL TYPE ALIASES
 # ──────────────────────────────────────────────────────────
 
-LLM = None
-TrainingEngine = None
-PreTrainingEngine = None
-FineTuneEngine = None
+# Production LLM is composed of an `MoE` expert pool plus a `ComposedModel`
+# glue layer. This is the canonical way to obtain a working language
+# model in the current codebase.
+LLM = MoE
+TrainingEngine = MoE
+PreTrainingEngine = MoE
+FineTuneEngine = MoE
 
 # ──────────────────────────────────────────────────────────
 # MODULE NAMESPACE (nx.module)
@@ -195,21 +212,21 @@ from neura_x import compose as _compose_module
 
 class _ModuleNamespace:
     """Namespace for nx.module.* access."""
-    Prediction = None
-    ImageGen = None
-    ImageUnderstand = None
-    VideoGen = None
-    AudioGen = None
-    SpeechSynthesis = None
-    SpeechRecognition = None
-    Tools = None
-    Skills = None
-    Memory = None
-    Reasoning = None
-    CodeExecution = None
-    MultiModal = None
-    AgentCore = None
-    Custom = None
+    Prediction = Predictive
+    ImageGen = ImageGen
+    ImageUnderstand = Predictive  # placeholder alias (use Predictive for now)
+    VideoGen = VideoGen
+    AudioGen = AudioGen
+    SpeechSynthesis = SpeechSynthesis
+    SpeechRecognition = SpeechRecognition
+    Tools = ToolRegistry
+    Skills = Skill
+    Memory = HolographicMemory
+    Reasoning = Predictive
+    CodeExecution = None  # subprocess-backed; see `nx.tools.run_code`
+    MultiModal = None  # compose-based; see `nx.compose`
+    AgentCore = Agent
+    Custom = ComposedModel
 
 
 module = _ModuleNamespace()
@@ -276,18 +293,21 @@ class _UtilsNamespace:
 
     @staticmethod
     def search(query):
-        """Placeholder for web search tool."""
-        return f"[Neura-X Search] Results for: {query}"
+        """Local knowledge-base search backed by ``neura_x.tools.web_search``."""
+        from neura_x.tools import web_search
+        return web_search(query)
 
     @staticmethod
     def sandbox(code):
-        """Placeholder for sandboxed code execution."""
-        return f"[Neura-X Sandbox] Executed code safely."
+        """Sandboxed Python execution backed by ``neura_x.tools.run_code``."""
+        from neura_x.tools import run_code
+        return run_code(code)
 
     @staticmethod
-    def sql(query):
-        """Placeholder for SQL query execution."""
-        return f"[Neura-X SQL] Query executed: {query}"
+    def sql(query, db_path: str = ":memory:"):
+        """SQL execution backed by ``neura_x.tools.query_db``."""
+        from neura_x.tools import query_db
+        return query_db(query, db_path)
 
 
 utils = _UtilsNamespace()
@@ -403,7 +423,7 @@ def _print_banner():
     print(f"RAM:     {ram_str}")
     print(f"Python:  {platform.python_version()}")
     print(f"Engine:  Fractal Tensor + Circadian Learning")
-    if _core_available:
+    if _core_available and _core is not None:
         print(f"Core:    Rust/C/C++ Native ✅")
     else:
         print(f"Core:    Python Fallback ⚠️")

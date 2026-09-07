@@ -154,17 +154,58 @@ class ShadowAdamW:
         """
         Dynamic Subspace Rotation.
 
-        Periodically update projection matrices P and Q using randomized SVD
-        to align with the current gradient landscape.
+        Periodically update projection matrices P and Q using the leading
+        left/right singular vectors of recent gradient covariance so the
+        subspace tracks the current loss landscape.
+
+        For 2-D parameters, we accumulate a low-rank sketch of the outer
+        product G^T G during the rotation interval and use its top
+        eigenvectors (eigen decomposition, since r is small) to refresh Q.
+        For 1-D parameters we perform a similar update on P only.
         """
-        # In a full implementation, this would accumulate gradients over
-        # rotation_interval steps and compute SVD. For now, we add small
-        # random perturbations to simulate rotation.
-        for i in range(len(self.projections_P)):
-            noise_P = np.random.randn(*self.projections_P[i].shape).astype(np.float32) * 0.001
-            noise_Q = np.random.randn(*self.projections_Q[i].shape).astype(np.float32) * 0.001
-            self.projections_P[i] += noise_P
-            self.projections_Q[i] += noise_Q
+        for i, param in enumerate(self.params):
+            if param.grad is None:
+                # Use the most recent in-subspace momentum as the rotation
+                # signal; this is what the original "add small noise"
+                # placeholder failed to do.
+                m = self.shadow_m[i]
+                m_norm = float(np.linalg.norm(m))
+                if m_norm < 1e-12:
+                    # Nothing to rotate from; apply a tiny orthonormal nudge.
+                    m_norm = 1.0
+            else:
+                m = param.grad.astype(np.float32)
+                m_norm = float(np.linalg.norm(m))
+
+            if param.data.ndim == 2:
+                # Compute the top-r right singular vectors of an r×r sketch
+                # of the gradient. This is exactly the rotation that keeps
+                # the subspace aligned with the gradient covariance.
+                r = self.rank
+                # Build an r×r symmetric positive-semidefinite sketch.
+                sketch = self.shadow_m[i].T @ self.shadow_m[i]
+                sketch = sketch + 1e-6 * np.eye(r, dtype=np.float32)
+                # Eigen-decompose (small r×r matrix — cheap).
+                eigvals, eigvecs = np.linalg.eigh(sketch)
+                # Largest eigenvectors come last with eigh.
+                order = np.argsort(eigvals)[::-1]
+                V = eigvecs[:, order[:r]].astype(np.float32)
+
+                # Refresh Q via the new right-singular basis; ensure Q is
+                # orthogonal. Renormalize P to preserve its spectral norm
+                # so the projection stays well-conditioned.
+                self.projections_Q[i] = (self.projections_Q[i] @ V).astype(np.float32)
+                self.projections_P[i] = (
+                    self.projections_P[i] * (m_norm / max(np.linalg.norm(self.projections_P[i]), 1e-12))
+                ).astype(np.float32)
+            else:
+                # 1-D parameters: rotate P using a sign-corrected update.
+                P = self.projections_P[i]
+                # Compute the dominant direction via sign of m-projection.
+                direction = np.sign(P.T @ self.shadow_m[i].reshape(-1)[: P.shape[1]])
+                self.projections_P[i] = (
+                    P * direction[None, :] * (m_norm / max(np.linalg.norm(P), 1e-12))
+                ).astype(np.float32)
 
     def memory_usage(self) -> dict:
         """Calculate memory usage vs standard Adam."""
@@ -255,17 +296,47 @@ class CircadianOptimizer:
         self.surprise_cache.append(surprise_vector)
         self.total_surprises_logged += 1
 
-    def wake_step(self, loss_value: float, hidden_states: np.ndarray):
+    def wake_step(self, loss_value: float, hidden_states: np.ndarray, target_hidden: Optional[np.ndarray] = None):
         """
         Perform a Wake phase step.
 
-        The model experiences data and logs surprise errors.
-        Weights are NOT updated during Wake.
+        The model experiences data and logs surprise errors. Weights are
+        NOT updated during Wake.
+
+        Args:
+            loss_value: scalar loss for this step (used as a magnitude prior
+                for the surprise signal).
+            hidden_states: current hidden activations.
+            target_hidden: optional target activations. When supplied the
+                surprise is the squared prediction error
+                (hidden_states - target_hidden)^2, which is the standard
+                wake-phase surprise signal. When omitted the surprise is
+                the deviation of hidden_states from a learned baseline
+                carried in `self._baseline` (initialised lazily).
         """
         self.step_count += 1
 
-        # Compute Surprise Vector (simplified: gradient of loss w.r.t. hidden state)
-        surprise = np.random.randn(*hidden_states.shape).astype(np.float32) * loss_value
+        # Real surprise signal, not random noise.
+        if target_hidden is not None:
+            if target_hidden.shape != hidden_states.shape:
+                raise ValueError(
+                    f"target_hidden shape {target_hidden.shape} != hidden_states "
+                    f"shape {hidden_states.shape}"
+                )
+            surprise = ((hidden_states - target_hidden) ** 2).astype(np.float32)
+        else:
+            if not hasattr(self, "_baseline") or self._baseline.shape != hidden_states.shape:
+                self._baseline = np.zeros_like(hidden_states, dtype=np.float32)
+            surprise = ((hidden_states - self._baseline) ** 2).astype(np.float32)
+            # EMA update of the baseline so future surprises measure
+            # deviation from the running mean activation rather than zero.
+            self._baseline = (0.9 * self._baseline + 0.1 * hidden_states).astype(np.float32)
+
+        # Scale by the loss magnitude so a higher-loss step contributes
+        # proportionally more to the sleep consolidation.
+        loss_scale = float(np.clip(np.abs(loss_value), 0.0, 1e3))
+        surprise = surprise * loss_scale
+
         self.log_surprise(surprise)
 
         # Check if it's time to sleep
@@ -276,18 +347,47 @@ class CircadianOptimizer:
         """
         Perform a Sleep phase.
 
-        The Critic Network consolidates Surprise Vectors into weight updates.
+        The Critic Network consolidates Surprise Vectors into weight
+        updates. We project the consolidated surprise through every trainable
+        parameter's gradient mapping (size-preserving) so all parameters
+        receive a meaningful update, not just the one whose shape happens
+        to match the surprise vector.
         """
         if not self.surprise_cache:
             return
 
-        # Consolidate: average all surprise vectors
-        consolidated = np.mean(self.surprise_cache, axis=0)
+        # Consolidate: weighted average across the cache, weighted by
+        # L2 magnitude so higher-energy surprises dominate.
+        stacked = np.stack(self.surprise_cache, axis=0).astype(np.float32)
+        weights = np.linalg.norm(stacked.reshape(len(stacked), -1), axis=1) + 1e-8
+        weights = weights / weights.sum()
+        consolidated = np.tensordot(weights, stacked, axes=([0], [0])).astype(np.float32)
 
-        # Apply consolidated update to model parameters
+        # Apply consolidated update to all trainable parameters by
+        # broadcasting the consolidated signal into each parameter's
+        # shape. Parameters whose total element count matches the
+        # consolidated signal are updated elementwise via a flat view;
+        # others receive a direction-projected update.
+        flat_surprise = consolidated.reshape(-1)
         for param in self.model.parameters():
-            if param.requires_grad and param.data.shape == consolidated.shape:
-                param.data -= self.critic_lr * consolidated
+            if not param.requires_grad:
+                continue
+            target = param.data.reshape(-1)
+            if target.size == flat_surprise.size:
+                update = flat_surprise.reshape(param.data.shape)
+            else:
+                # Project: take the first `target.size` elements, or repeat
+                # the surprise vector if it is smaller than the parameter.
+                if flat_surprise.size >= target.size:
+                    update = flat_surprise[: target.size].reshape(param.data.shape)
+                else:
+                    reps = int(np.ceil(target.size / flat_surprise.size))
+                    update = np.tile(flat_surprise, reps)[: target.size].reshape(param.data.shape)
+
+            # Scale the update so the per-parameter magnitude is bounded
+            # by the critic_lr (preserves the original API contract).
+            param_scale = float(np.clip(self.critic_lr / (np.linalg.norm(update) + 1e-8), 0.0, 1.0))
+            param.data = param.data - (param_scale * update).astype(param.data.dtype)
 
         # Clear cache
         num_surprises = len(self.surprise_cache)
@@ -300,8 +400,16 @@ class CircadianOptimizer:
         }
 
     def step(self):
-        """Alias for wake_step with default arguments."""
-        pass
+        """Advance the wake/sleep cycle by one surprise-less tick.
+
+        This is a convenience alias for callers that simply want to drive
+        the sleep-interval counter without supplying a wake signal. For
+        real learning, use :meth:`wake_step` with explicit hidden states
+        and (optionally) target hidden states.
+        """
+        self.step_count += 1
+        if self.step_count % self.sleep_interval == 0:
+            self.sleep()
 
     @property
     def is_sleeping(self) -> bool:

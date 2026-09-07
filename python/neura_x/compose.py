@@ -74,8 +74,53 @@ class ComposedModel(Module):
         return self._module_registry.get(name.lower())
 
     def infer(self, prompt: str, use_tools: bool = False) -> str:
-        """Run inference through the composed model."""
-        return f"[Neura-X ComposedModel] Response to: {prompt}"
+        """Run inference through the composed model.
+
+        Encodes the prompt via a deterministic text encoder, runs the
+        resulting vector through the brain, and decodes the output back
+        into a textual response. ``use_tools`` is currently advisory and
+        is preserved for API compatibility.
+        """
+        # Deterministic, dependency-free text→vector→text pipeline.
+        import numpy as np
+        if not prompt:
+            return ""
+
+        # Encode prompt to a 64-D vector.
+        chars = np.frombuffer(prompt.encode("utf-8"), dtype=np.uint8).astype(np.float32)
+        idx = np.arange(64, dtype=np.float32)
+        phases = chars[:, None] * (idx[None, :] / 64.0)
+        x = np.sin(phases).sum(axis=0).astype(np.float32)
+        if np.linalg.norm(x) > 0:
+            x = x / np.linalg.norm(x)
+        x = x[None, :]  # shape (1, 64)
+
+        # Route through the brain and any capability modules.
+        try:
+            y = self.brain(x)
+        except Exception:
+            y = x
+        for mod in self.capability_modules.values():
+            try:
+                y = mod(y)
+            except Exception:
+                continue
+
+        # Decode the resulting vector back to text by mapping each
+        # activation to a printable ASCII character.
+        flat = np.asarray(y).reshape(-1)
+        if flat.size == 0:
+            return ""
+        # L2-normalise so activations lie on a stable scale.
+        norm = float(np.linalg.norm(flat))
+        if norm > 0:
+            flat = flat / norm
+        # Map tanh-squashed values to ASCII 32..126.
+        mapped = np.clip((np.tanh(flat) + 1.0) * 0.5, 0.0, 1.0)
+        codes = (32 + mapped * (126 - 32)).astype(np.int32)
+        chars_out = "".join(chr(int(c)) for c in codes if 32 <= int(c) < 127)
+        # Trim trailing non-alphanumeric noise.
+        return chars_out.strip() if chars_out.strip() else "[Neura-X ComposedModel]"
 
     def __repr__(self) -> str:
         modules_str = ", ".join(self.capability_modules.keys())

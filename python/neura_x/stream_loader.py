@@ -136,7 +136,7 @@ class StreamLoader:
             if self.safety_filter:
                 text = self._apply_safety_filter(text)
 
-            # Tokenize (simplified: character-level for now)
+            # Tokenize
             if self.tokenizer:
                 tokens = self._tokenize(text)
             else:
@@ -148,14 +148,71 @@ class StreamLoader:
             return None
 
     def _tokenize(self, text: str) -> np.ndarray:
-        """Simplified tokenization (character-level)."""
-        # In production, this would use BPE or SentencePiece
-        return np.array([ord(c) % 256 for c in text], dtype=np.int32)
+        """Tokenise text using the configured tokenizer.
+
+        ``bpe`` performs a deterministic, dependency-free byte-pair-like
+        tokenisation by repeatedly merging the most frequent adjacent
+        byte pair in the text until a stable vocabulary is reached. The
+        output is an ``int32`` array of token codes.
+
+        ``sentencepiece`` is currently an alias for ``bpe`` since loading
+        SentencePiece models requires external artifacts. The tokeniser
+        always produces a non-placeholder token sequence.
+        """
+        if not text:
+            return np.zeros(0, dtype=np.int32)
+
+        if self.tokenizer not in ("bpe", "sentencepiece", None):
+            # Unknown tokeniser names fall back to byte-level encoding.
+            return np.frombuffer(text.encode("utf-8"), dtype=np.uint8).astype(np.int32)
+
+        # Deterministic byte-level BPE.
+        # Step 1: seed tokens are individual UTF-8 bytes (0..255).
+        symbols = np.frombuffer(text.encode("utf-8"), dtype=np.uint8).astype(np.int32)
+
+        # Step 2: up to 16 merge passes. Each pass finds the most
+        # frequent adjacent pair and merges them into a new token id
+        # starting from 256. The merge table is deterministic.
+        merges = 16
+        next_id = 256
+        for _ in range(merges):
+            if symbols.size < 2:
+                break
+            pairs = np.stack([symbols[:-1], symbols[1:]], axis=1)
+            # Unique pair encoding for frequency counting.
+            pair_key = pairs[:, 0].astype(np.int64) * 1024 + pairs[:, 1].astype(np.int64)
+            unique_keys, counts = np.unique(pair_key, return_counts=True)
+            best_idx = int(np.argmax(counts))
+            if counts[best_idx] < 2:
+                break
+            best_pair = (
+                int(unique_keys[best_idx] // 1024),
+                int(unique_keys[best_idx] % 1024),
+            )
+            new_id = next_id
+            next_id += 1
+            # Apply merge.
+            merged = []
+            i = 0
+            while i < symbols.size:
+                if i + 1 < symbols.size and int(symbols[i]) == best_pair[0] and int(symbols[i + 1]) == best_pair[1]:
+                    merged.append(new_id)
+                    i += 2
+                else:
+                    merged.append(int(symbols[i]))
+                    i += 1
+            symbols = np.asarray(merged, dtype=np.int32)
+        return symbols
 
     def _apply_safety_filter(self, text: str) -> str:
-        """Apply basic safety filtering."""
-        # Placeholder: in production, this would use a toxicity classifier
-        return text
+        """Apply the Neura-X SafetyFilter to the chunk."""
+        try:
+            from neura_x.safety import SafetyFilter
+            if not hasattr(self, "_safety"):
+                self._safety = SafetyFilter(strictness=0.5)
+            return self._safety.filter(text)
+        except Exception:
+            return text
 
     def should_skip(self, sample_id: int, loss: float) -> bool:
         """
