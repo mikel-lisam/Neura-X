@@ -195,11 +195,11 @@ All benchmarks are conducted on the Genesis Machine: a 2015 Dell Latitude E7450 
 
 ## 📚 Documentation
 
-[Whitepaper](./docs/whitepaper.md)
-[API Reference](./docs/api_reference.md)
-[Mathematical Proofs](./docs/mathematical_proofs.md)
-[Tutorials](./docs/tutorials/)
-[Benchmarks](./docs/benchmarks/)
+- [Whitepaper](./docs/whitepaper.md)
+- [API Reference](./docs/api_reference.md)
+- [Mathematical Proofs](./docs/mathematical_proofs.md)
+- [Tutorials](./docs/tutorials/)
+- [Benchmarks](./docs/benchmarks/)
 
 ---
 
