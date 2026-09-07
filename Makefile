@@ -132,7 +132,7 @@ dirs:
 c: dirs $(C_OBJECTS)
 	@echo ""
 	@echo "🔧 Linking C library..."
-	$(CC) $(LDFLAGS) -o $(C_LIB) $(C_OBJECTS) -lm -lopenblas
+	$(CC) $(LDFLAGS) -o $(C_LIB) $(C_OBJECTS) -lm
 	@echo "✅ C library built: $(C_LIB)"
 
 $(C_BUILD_DIR)/%.o: $(C_SRC_DIR)/%.c
