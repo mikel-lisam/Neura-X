@@ -1,0 +1,721 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Neura-X: Intelligence Without Limits.
+# Copyright (c) 2026 Edusei Mikel Lisamba. All Rights Reserved.
+#
+# Monorepo .gitignore — v2
+# Covers: Python, C, C++, Rust, LLVM, CMake, IDEs, OS, Neura-X artifacts
+#
+# Policy notes:
+#   - assets/ (logo, brand) is ALWAYS committed.
+#   - docs/benchmarks/logs/ (raw benchmark logs) is ALWAYS committed.
+#   - Cargo.lock files ARE committed (reproducible wheel builds).
+#   - .nex model files are ignored only if you uncomment section 5.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 1. PYTHON
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions and native modules (built artifacts, never committed)
+*.so
+*.pyd
+*.dylib
+python/neura_x/_core*.so
+python/neura_x/_core*.pyd
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.whl
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.benchmarks/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django / Flask (if used in examples)
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Experiment tracking run directories
+wandb/
+mlruns/
+flagged/
+.streamlit/secrets.toml
+
+# Spyder
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# pytype
+.pytype/
+
+# Cython
+cython_debug/
+
+# Ruff
+.ruff_cache/
+
+# Black
+.black_cache/
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 2. C / C++
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Object files
+*.o
+*.obj
+*.ko
+*.elf
+*.d
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (including Windows DLLs)
+*.dll
+*.so.*
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+# CMake
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile.cmake
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+cmake-build-*/
+
+# CMake build directories
+build-c/
+build-cpp/
+build-release/
+build-debug/
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. RUST
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Rust build artifacts
+target/
+**/target/
+
+# NOTE: Cargo.lock files ARE committed on purpose.
+# They guarantee reproducible wheel builds across machines.
+
+# Generated documentation
+/doc
+
+# Rust analyzer
+.rust-analyzer/
+
+# Rust profiling
+perf.data
+perf.data.old
+flamegraph.svg
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 4. LLVM
+# ══════════════════════════════════════════════════════════════════════════════
+
+# LLVM intermediate representation files
+*.ll
+*.bc
+
+# LLVM build artifacts (if building LLVM from source)
+llvm-build/
+llvm-project/build/
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 5. NEURA-X SPECIFIC
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Neura-X build output directory
+/build/
+
+# Neura-X compiled libraries (built by Makefile)
+libneura_c.so
+libneura_cpp.so
+libneura_c.dylib
+libneura_cpp.dylib
+neura_c.dll
+neura_cpp.dll
+
+# Neura-X model files (large binary artifacts)
+# Uncomment to ignore model files in the repo:
+# *.nex
+# *.nexm
+# *.nexs
+# *.nexa
+# *.nexp
+# To commit small example models later, add negations in section 16.
+
+# Neura-X training checkpoints
+checkpoints/
+*.ckpt
+*.checkpoint
+
+# Neura-X training logs
+training_logs/
+*.training.log
+
+# Neura-X benchmark outputs (raw logs under docs/benchmarks/logs/ are kept)
+benchmarks/results/
+benchmark_results.json
+*.benchmark.json
+*.benchmark.csv
+
+# Neura-X Dream Dashboard exports
+dream_exports/
+*.dream.json
+
+# Neura-X X-Ray exports
+xray_exports/
+*.xray.json
+
+# Neura-X temporary files
+.neura_cache/
+.neura_tmp/
+*.neura.tmp
+
+# Neura-X Surprise Vector caches
+surprise_cache/
+*.surprise.bin
+
+# Neura-X .nex file drafts (work-in-progress)
+*_draft.nex
+*_wip.nex
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 6. DATA & DATASETS
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Large dataset files (should not be in git)
+*.csv
+*.tsv
+*.parquet
+*.arrow
+*.jsonl
+*.tfrecord
+*.h5
+*.hdf5
+
+# Except example/test data (whitelist small files)
+!examples/data/*.csv
+!examples/data/*.jsonl
+!python/tests/data/*.csv
+
+# Tokenized datasets
+tokenized_data/
+*.tokens
+*.tokenized
+
+# Compressed data archives
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.zip
+*.7z
+*.gz
+*.bz2
+*.xz
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 7. IDE & EDITORS
+# ══════════════════════════════════════════════════════════════════════════════
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+*.code-workspace
+
+# JetBrains (PyCharm, CLion, RustRover, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Vim
+[._]*.s[a-v][a-z]
+!*.svg
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+*~
+.*.swp
+
+# Emacs
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcworkspace
+
+# Visual Studio
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 8. OPERATING SYSTEM FILES
+# ══════════════════════════════════════════════════════════════════════════════
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Android
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# iOS
+*.ipa
+*.dSYM.zip
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 9. DOCUMENTATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+# MkDocs
+docs/site/
+site/
+
+# Sphinx
+docs/_build/
+_build/
+
+# Doxygen
+docs/doxygen_output/
+html/
+latex/
+
+# Generated API docs
+docs/generated/
+api_docs/
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 10. CI/CD & DEPLOYMENT
+# ══════════════════════════════════════════════════════════════════════════════
+
+# GitHub Actions artifacts
+*.artifact.zip
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Ansible
+*.retry
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 11. SECRETS & SENSITIVE DATA
+# ══════════════════════════════════════════════════════════════════════════════
+
+# NEVER commit secrets
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.jks
+
+# Environment files with secrets
+.env.local
+.env.production
+.env.staging
+*.env.*
+
+# API keys (pattern-based)
+*_api_key*
+*_secret_key*
+*_access_token*
+*_private_key*
+
+# Credentials files
+credentials.json
+secrets.json
+config.local.json
+.local_config
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 12. LOGS & TEMPORARY FILES
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Log files
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.swp
+*.swo
+
+# Core dumps
+core
+core.*
+*.core
+vgcore.*
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 13. PACKAGE MANAGER ARTIFACTS
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Node.js (if used in web dashboard)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+
+# pip
+pip-wheel-metadata/
+
+# conda
+.conda/
+environment.yml.backup
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 14. PROFILING & BENCHMARKING
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Python profiling
+*.prof
+*.lprof
+*.cprof
+py-spy-output/
+
+# C/C++ profiling
+gmon.out
+callgrind.out.*
+cachegrind.out.*
+massif.out.*
+*.perf
+perf.data
+
+# Rust profiling
+*.flamegraph.svg
+perf.data*
+
+# Valgrind
+valgrind-output/
+*.valgrind
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 15. MISC
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Backup files
+*.bak
+*.orig
+*.old
+
+# Archives (should not be committed)
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+
+# Large binary files (use Git LFS if needed)
+*.bin
+*.weights
+*.pt
+*.pth
+*.onnx
+*.gguf
+*.safetensors
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Language server protocol
+.lsp/
+.langserver/
+
+# Tags files
+tags
+TAGS
+.tags
+ctags
+gtags
+GPATH
+
+# Windows shortcuts
+*.lnk
+
+# Thumbnail cache
+.thumb
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 16. REPOSITORY EXCEPTIONS (ALWAYS COMMITTED)
+#     These negations come LAST so they override every rule above.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Brand assets (logo, banners, icons)
+!assets/
+!assets/**
+
+# Raw benchmark logs are part of the scientific record
+!docs/benchmarks/logs/
+!docs/benchmarks/logs/**
+
+# Example environment template (safe, no secrets)
+!.env.example
+
+# Small committed sample datasets for tutorials/tests
+!examples/data/
+!examples/data/**
+!python/tests/data/
+!python/tests/data/**
+
+# SVG logos must survive the Vim swap-file pattern
+!*.svg

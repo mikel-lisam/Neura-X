@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability
+    url: mailto:lisambamikel@gmail.com?subject=[Neura-X]%20Security
+    about: Report security issues privately. Do not open public issues.
+  - name: Licensing & Commercial Use
+    url: mailto:lisambamikel@gmail.com?subject=[Neura-X]%20License
+    about: Community vs Commercial license questions.
+  - name: Discussions & Community
+    url: https://github.com/mikeledusei/Neura-X/discussions
+    about: Ask questions, share models and skills, show what you built.

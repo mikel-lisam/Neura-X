@@ -1,0 +1,103 @@
+# ==========================================================
+# Neura-X: Intelligence Without Limits.
+# Copyright (c) 2026 Edusei Mikel Lisamba. All Rights Reserved.
+#
+# Benchmark pipeline. Official numbers are produced on the
+# Genesis Machine via a self-hosted runner; set the repository
+# variable BENCHMARK_RUNNER to its label. Falls back to
+# ubuntu-latest for smoke benchmarks.
+# ==========================================================
+
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"        # Weekly, Monday 03:00 UTC
+  push:
+    branches: [main]
+    paths:
+      - "core/**"
+      - "python/neura_x/**"
+
+jobs:
+  benchmark:
+    name: Benchmark Suite
+    runs-on: ${{ vars.BENCHMARK_RUNNER || 'ubuntu-latest' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy pytest
+
+      - name: Full build
+        run: make all
+
+      - name: Run test suites
+        run: |
+          cd python && python -m pytest tests/ -q
+          cd ..
+
+      - name: Run native metrics (MIR / TPI / FR / SRR)
+        run: |
+          python - <<'PY'
+          import json, time
+          import numpy as np
+          import neura_x as nx
+
+          results = {"version": nx.__version__, "metrics": {}}
+
+          # Fractal bloom throughput
+          ft = nx.FractalTensor(rows=1024, cols=1024, K=1024)
+          t0 = time.perf_counter()
+          for _ in range(10):
+              ft.bloom_block(0, 256)
+          dt = (time.perf_counter() - t0) / 10
+          results["metrics"]["bloom_ms_per_256rows_K1024"] = round(dt * 1e3, 3)
+
+          # Liquid Router throughput
+          router = nx.LiquidRouter(num_neurons=1_000_000, awake_threshold=0.05)
+          x = np.random.randn(1_000_000).astype(np.float32)
+          t0 = time.perf_counter()
+          for _ in range(10):
+              router.route(x, hard=True)
+          dt = (time.perf_counter() - t0) / 10
+          results["metrics"]["route_ms_per_1M_neurons"] = round(dt * 1e3, 3)
+          results["metrics"]["srr"] = round(router.get_stats().sparsity_ratio, 4)
+
+          # Shadow optimizer step time and memory
+          params = [nx.Parameter(np.random.randn(4096, 4096).astype(np.float32))]
+          opt = nx.ShadowAdamW(params, lr=1e-3, rank=64)
+          params[0].grad = np.random.randn(4096, 4096).astype(np.float32)
+          t0 = time.perf_counter()
+          opt.step()
+          dt = time.perf_counter() - t0
+          mem = opt.memory_usage()
+          results["metrics"]["shadow_step_ms_4096x4096"] = round(dt * 1e3, 3)
+          results["metrics"]["shadow_reduction_factor"] = round(mem["reduction_factor"], 1)
+
+          # Fractal ratio for a 70B-class layer set
+          layer = nx.FractalLayer(8192, 8192, conceptual_params=70_000_000_000, K=1024)
+          mu = layer.memory_usage()
+          results["metrics"]["fractal_reduction_factor"] = round(mu["reduction_factor"], 1)
+
+          with open("benchmark_results.json", "w") as f:
+              json.dump(results, f, indent=2)
+          print(json.dumps(results, indent=2))
+          PY
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-run-${{ github.run_number }}
+          path: benchmark_results.json
+          if-no-files-found: error

@@ -1,0 +1,50 @@
+name: Feature Request
+description: Propose a new capability for Neura-X
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Neura-X is universal by design: any model type, any laptop.
+        Tell us what intelligence you want to build.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: API sketch, paradigm, or model type you envision.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Core paradigms (Fractal / Shadow / Circadian / Router)
+        - Model types (LLM / Image / Video / Audio / Predictive / MoE)
+        - Composability (modules / skills / tools / agents)
+        - File format (.nex / .nexm / .nexs)
+        - Serving & ecosystem (nx.serve / nx.hub / interop)
+        - Documentation & tutorials
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Design constraints
+      options:
+        - label: Must run CPU-first on ≤ 8 GB RAM (no GPU requirement).
+          required: true
+        - label: Must keep standard training mathematics (backprop/Adam).
+          required: true

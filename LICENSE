@@ -1,0 +1,208 @@
+═══════════════════════════════════════════════════════════════════════════════
+                         NEURA-X DUAL LICENSE
+                        Version 1.0 — March 2026
+═══════════════════════════════════════════════════════════════════════════════
+
+Neura-X: Intelligence Without Limits.
+Copyright (c) 2026 Edusei Mikel Lisamba. All Rights Reserved.
+
+This software is distributed under a DUAL LICENSE model. Every user falls
+into exactly one of two categories:
+
+  • License A (Community)  — Free for individuals, students, researchers,
+                             educators, and non-profit organizations.
+
+  • License B (Commercial) — Paid license required for companies, startups,
+                             and any entity using Neura-X in revenue-
+                             generating products or services.
+
+By downloading, installing, copying, modifying, or using Neura-X in any way,
+you agree to be bound by the terms of the license category that applies to
+you. If you do not agree, you must not use this software.
+
+═══════════════════════════════════════════════════════════════════════════════
+PART A: NEURA-X COMMUNITY LICENSE (Free)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ELIGIBILITY
+   This license applies to:
+   a) Individual students, researchers, hobbyists, and developers
+   b) Non-profit organizations
+   c) Accredited educational institutions (see Part C: Academic Grant)
+   d) Any person or entity NOT using Neura-X for commercial purposes
+
+2. GRANT OF RIGHTS
+   Under this license, you may:
+   a) Download, install, and use Neura-X free of charge
+   b) View, study, and analyze the source code
+   c) Modify the source code for research, education, or personal projects
+   d) Distribute modified versions publicly, provided that:
+      i.   The modified version remains free of charge
+      ii.  The Founder's Watermark and attribution are retained
+      iii. The modified version is also distributed under this license
+   e) Train, fine-tune, and deploy AI models for personal or academic use
+   f) Publish research papers using Neura-X, with proper citation
+   g) Distribute .nex model files freely for non-commercial purposes
+
+3. RESTRICTIONS
+   Under this license, you may NOT:
+   a) Sell Neura-X, any modified version, or any derivative work
+   b) Use Neura-X inside a product or service that generates revenue
+   c) Use Neura-X for internal business operations of a commercial entity
+   d) Remove, alter, or circumvent the Founder's Watermark, the Founder's
+      Lock, or the .nex cryptographic seed
+   e) Claim ownership of Neura-X's intellectual property, mathematical
+      formulations, paradigms, or architectural designs
+   f) Sublicense Neura-X to any third party
+
+4. REQUIRED ATTRIBUTION
+   All distributions, modifications, research papers, and public uses of
+   Neura-X must include the following attribution:
+
+   "Neura-X: Intelligence Without Limits.
+    Founded by Edusei Mikel Lisamba.
+    Open University of Kenya."
+
+═══════════════════════════════════════════════════════════════════════════════
+PART B: NEURA-X COMMERCIAL LICENSE (Paid)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ELIGIBILITY
+   A Commercial License is required for:
+   a) Companies, corporations, and commercial entities of any size
+   b) Startups and businesses using Neura-X in revenue-generating products
+   c) Any entity using Neura-X for internal business operations
+   d) Any entity using Neura-X in client-facing applications
+   e) Any entity with annual revenue exceeding $1,000,000 USD, regardless
+      of whether the use is directly revenue-generating
+
+2. GRANT OF RIGHTS
+   Under a valid Commercial License, you may:
+   a) Use Neura-X in production environments
+   b) Train and deploy AI models for commercial products and services
+   c) Modify the source code for internal use within your organization
+   d) Train and sell AI models built with Neura-X
+   e) Access priority support as defined by your license tier
+   f) Use Neura-X in client-facing and revenue-generating applications
+
+3. RESTRICTIONS
+   Under a Commercial License, you may NOT:
+   a) Resell, sublicense, or redistribute the Neura-X source code
+   b) Remove, alter, or circumvent the Founder's Watermark or Founder's Lock
+   c) Claim ownership of Neura-X's intellectual property
+   d) Share the source code outside your licensed organization
+   e) Reverse-engineer the Founder's Lock or cryptographic seed
+
+4. COMMERCIAL FEES
+   Commercial license fees are determined by the Founder on a case-by-case
+   basis and may vary by:
+   a) Company size and annual revenue
+   b) Number of users/seats
+   c) Scope of usage
+   d) Support level required
+
+   To obtain a Commercial License, contact: founder@neura-x.dev
+
+═══════════════════════════════════════════════════════════════════════════════
+PART C: ACADEMIC GRANT
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Any university, polytechnic, college, or accredited educational
+   institution may use Neura-X freely for teaching, coursework, academic
+   research, and student projects without a Commercial License, regardless
+   of the institution's revenue or funding.
+
+2. This grant extends to all enrolled students and faculty members for the
+   duration of their enrollment or employment at the institution.
+
+3. Academic use includes:
+   a) Classroom instruction and coursework
+   b) Academic research and publications
+   c) Student thesis and dissertation projects
+   d) University-hosted workshops and hackathons
+
+4. Academic users must still comply with the attribution requirements in
+   Part A, Section 4.
+
+═══════════════════════════════════════════════════════════════════════════════
+PART D: INTELLECTUAL PROPERTY PROTECTION
+═══════════════════════════════════════════════════════════════════════════════
+
+1. OWNERSHIP
+   All intellectual property, including but not limited to mathematical
+   formulations, algorithms, computational paradigms, architectural designs,
+   source code, documentation, and branding, remains the sole and exclusive
+   property of Edusei Mikel Lisamba ("the Founder").
+
+   Protected paradigms include, but are not limited to:
+   a) Fractal Tensors (Algorithmic Weight Generation)
+   b) Circadian Optimizer (Wake-Sleep Learning)
+   c) Liquid Router (Dynamic Sparsity)
+   d) Shadow Optimizer (Subspace Gradient Projection)
+   e) Ghost Tensors (Predictive Activation Offloading)
+   f) Holographic Memory (Hyperdimensional Computing)
+   g) Predictive Coding (Free Energy Principle)
+   h) Curriculum Sampler (Active Loss Skipping)
+   i) Dendritic Compute Nodes
+
+2. THE FOUNDER'S LOCK
+   The Founder's Watermark, .nex file header signature, and cryptographic
+   seed are immutable components of the framework. Removal, alteration, or
+   circumvention of the Founder's Lock constitutes a material breach of
+   this license and will be pursued under applicable international
+   intellectual property law.
+
+3. NO TRANSFER OF RIGHTS
+   Neither the Community License nor the Commercial License grants ownership
+   of Neura-X to the licensee. Both licenses grant a right of use only.
+   All derivatives, modifications, and improvements created by licensees do
+   not transfer intellectual property ownership to the licensee.
+
+4. PATENT PROTECTION
+   The Founder retains all patent rights to the mathematical methods and
+   computational paradigms described herein. Use of Neura-X under either
+   license constitutes acceptance that these methods are the intellectual
+   property of the Founder. See PATENTS.md for detailed patent claims.
+
+5. ENFORCEMENT
+   Violations of this dual license will be enforced through:
+   a) Cease and desist notices
+   b) DMCA takedown requests for code repositories
+   c) Civil litigation for damages
+   d) Referral to relevant intellectual property authorities
+   e) Criminal prosecution where applicable under local law
+
+═══════════════════════════════════════════════════════════════════════════════
+PART E: DISCLAIMER AND LIMITATION OF LIABILITY
+═══════════════════════════════════════════════════════════════════════════════
+
+1. THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+2. IN NO EVENT SHALL THE FOUNDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY ARISING FROM THE USE OF THIS SOFTWARE.
+
+3. The user assumes all risk associated with the use of Neura-X, including
+   but not limited to data loss, hardware damage, and model output quality.
+
+═══════════════════════════════════════════════════════════════════════════════
+PART F: TERMINATION
+═══════════════════════════════════════════════════════════════════════════════
+
+1. This license terminates automatically if you violate any of its terms.
+2. Upon termination, you must cease all use of Neura-X and destroy all
+   copies in your possession.
+3. The Founder reserves the right to terminate any license at any time
+   for breach of terms.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Neura-X: Intelligence Without Limits.
+Founded by Edusei Mikel Lisamba.
+Open University of Kenya.
+Built in Kenya. Built for the world.
+
+© 2026 Edusei Mikel Lisamba. All Rights Reserved.
+
+═══════════════════════════════════════════════════════════════════════════════

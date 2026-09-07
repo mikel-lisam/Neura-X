@@ -1,0 +1,42 @@
+# ==========================================================
+# Neura-X: Intelligence Without Limits.
+# Copyright (c) 2026 Edusei Mikel Lisamba. All Rights Reserved.
+# ==========================================================
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "ci"]
+
+  - package-ecosystem: "cargo"
+    directory: "/core/rust/pager"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "rust"]
+
+  - package-ecosystem: "cargo"
+    directory: "/core/rust/nex_format"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "rust"]
+
+  - package-ecosystem: "cargo"
+    directory: "/core/rust/serve"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "rust"]
+
+  - package-ecosystem: "cargo"
+    directory: "/core/rust/python_bridge"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "rust"]
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "python"]

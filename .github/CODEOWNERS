@@ -1,0 +1,22 @@
+# ==========================================================
+# Neura-X: Intelligence Without Limits.
+# Copyright (c) 2026 Edusei Mikel Lisamba. All Rights Reserved.
+#
+# All intellectual property belongs exclusively to the Founder.
+# ==========================================================
+
+*                       @mikeledusei
+
+# Core paradigms and native engines
+/core/                  @mikeledusei
+
+# Legal and intellectual property
+/LICENSE                @mikeledusei
+/NOTICE.md              @mikeledusei
+/PATENTS.md             @mikeledusei
+
+# Brand
+/assets/                @mikeledusei
+
+# Cryptographic integrity
+/core/rust/nex_format/  @mikeledusei
